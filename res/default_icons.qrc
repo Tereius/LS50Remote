@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/default/index.theme</file>
+        <file>icons/default/48x48/ic_bluetooth.svg</file>
+        <file>icons/default/48x48/ic_equalizer.svg</file>
+        <file>icons/default/48x48/ic_pause.svg</file>
+        <file>icons/default/48x48/ic_play_arrow.svg</file>
+        <file>icons/default/48x48/ic_power_settings_new.svg</file>
+        <file>icons/default/48x48/ic_volume_off.svg</file>
+        <file>icons/default/48x48/ic_volume_up.svg</file>
+        <file>icons/default/48x48/ic_wifi.svg</file>
+        <file>icons/default/48x48/ic_settings.svg</file>
+    </qresource>
+</RCC>
