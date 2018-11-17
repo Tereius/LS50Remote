@@ -1,4 +1,3 @@
-find_package(CommonLibs QUIET)
 find_package(Qt5 COMPONENTS Core Svg Quick Concurrent QuickControls2 REQUIRED)
 find_path(Qt5_qml_DIR NAMES QtQml/qmldir PATH_SUFFIXES "lib" "lib/qml" "qml")
 find_path(Qt5_plugin_DIR NAMES platforms/qminimald.dll platforms/qminimal.dll PATH_SUFFIXES "plugins")

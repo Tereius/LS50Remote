@@ -2,7 +2,7 @@ import json, os
 from conans import ConanFile, CMake, tools
 
 
-class LibonvifConan(ConanFile):
+class LS50RemoteConan(ConanFile):
     jsonInfo = json.loads(tools.load("info.json"))
     name = jsonInfo["projectName"]
     version = "%u.%u.%u" % (jsonInfo["version"]["major"], jsonInfo["version"]["minor"], jsonInfo["version"]["patch"])
