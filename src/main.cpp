@@ -119,23 +119,20 @@ int main(int argc, char *argv[]) {
 	QCoreApplication::setApplicationVersion(version);
 	QCoreApplication::setOrganizationName("");
 	QCoreApplication::setOrganizationDomain(INFO_DOMAIN);
-	QCoreApplication::addLibraryPath("./");
-#ifndef NDEBUG
-	QCoreApplication::addLibraryPath(QT_PLUGIN_PATH);
-#endif
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
-	//#ifndef NDEBUG
-	//	QString storagePath = QCoreApplication::applicationDirPath();
-	//#else
+	QApplication app(argc, argv);
+
+#if !defined(NDEBUG) || defined(PORTABLE_MODE)
+	QDir storagePath(QCoreApplication::applicationDirPath() + "/" + QCoreApplication::applicationName());
+#else
 	QDir storagePath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+#endif
 	QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, storagePath.absolutePath());
 	QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, storagePath.absolutePath());
 	writeSettings();
-	//#endif
-
-	QApplication app(argc, argv);
+	qInfo() << "Using settings path:" << storagePath.absolutePath();
 
 	QCommandLineParser parser;
 	parser.addOption({"u", "Uninstall persistent data."});
@@ -147,17 +144,11 @@ int main(int argc, char *argv[]) {
 		exit(storagePath.removeRecursively() ? 0 : 1);
 	}
 
-	//	QQuickStyle::setStyle("material");
+	QQuickStyle::setStyle("default");
 	QIcon::setThemeName("default");
 
-	// open log file
-	if(log_file.size() > 5000) {
-		log_file.resize(0);
-		qWarning() << "Log file was resized.";
-	}
-
-	log_file.setFileName(storagePath.absoluteFilePath("test.log"));
-	auto success = log_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+	log_file.setFileName(storagePath.absoluteFilePath(QCoreApplication::applicationName() + ".log"));
+	auto success = log_file.open(QIODevice::WriteOnly | QIODevice::Text);
 	if(success) {
 		qInstallMessageHandler(dbug_msg_handler);
 	} else {
@@ -168,14 +159,7 @@ int main(int argc, char *argv[]) {
 	qmlRegisterType<KefDevice>("com.kef", 1, 0, "KefDevice");
 	qRegisterMetaType<QAbstractSocket::SocketError>();
 
-	auto networking = Networking::getGlobal();
-	networking->connectToHost("192.168.1.45", 50001);
-
 	QQmlApplicationEngine engine;
-#ifndef NDEBUG
-	engine.addImportPath(QML_IMPORT_PATH);
-	engine.addPluginPath(QML_IMPORT_PATH);
-#endif
 	engine.load(QUrl(QLatin1String("qrc:///gui/main.qml")));
 	if(engine.rootObjects().isEmpty()) return -1;
 	auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());

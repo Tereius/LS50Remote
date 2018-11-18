@@ -1,8 +1,20 @@
 #include "KefDevice.h"
 #include "Networking.h"
+#include <QSettings>
 
 
-KefDevice::KefDevice(QObject *pParent /*= nullptr*/) : QObject(pParent), mVolume(0), mInput(Network), mMuted(false) {}
+KefDevice::KefDevice(QObject *pParent /*= nullptr*/) : QObject(pParent), mVolume(0), mInput(Network), mMuted(false), mHost() {
+
+	connect(nw, &Networking::connectionStateChanged, this, [this](bool connected) { emit connectedChanged(connected); });
+
+	QSettings settings;
+	setHost(settings.value("host").toString());
+}
+
+bool KefDevice::isConnected() const {
+
+	return nw->isConnected();
+}
 
 int KefDevice::getVolume() const {
 
@@ -66,4 +78,25 @@ void KefDevice::setMuted(bool muted) {
 	}
 	mMuted = muted;
 	emit mutedChanged(mMuted);
+}
+
+void KefDevice::powerOff() {
+
+	nw->sendTcp(QByteArray::fromHex("5330819b0b"));
+}
+
+QString KefDevice::getHost() const {
+
+	return mHost;
+}
+
+void KefDevice::setHost(const QString &rHost) {
+
+	mHost = rHost;
+	QSettings settings;
+
+	settings.setValue("host", mHost);
+
+	nw->connectToHost(mHost, (qint16)50001);
+	emit hostChanged(mHost);
 }

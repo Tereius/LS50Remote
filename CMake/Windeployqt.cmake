@@ -40,16 +40,21 @@ endif()
 function(windeployqt target directory)
 
     # Run windeployqt immediately after build
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E
-            env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
-                --verbose 0
-                --no-compiler-runtime
-                --no-angle
-                --no-opengl-sw
-                \"$<TARGET_FILE:${target}>\"
-    )
+    #add_custom_command(TARGET ${target} POST_BUILD
+    #    COMMAND "${CMAKE_COMMAND}" -E
+    #        env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+    #            --verbose 0
+    #            --no-compiler-runtime
+    #            --no-angle
+    #            --no-opengl-sw
+    #            \"$<TARGET_FILE:${target}>\"
+    #)
 
+    #add_custom_command(TARGET ${target} POST_BUILD
+    #    COMMAND "${CMAKE_COMMAND}" -E echo "[Paths]" > "$<TARGET_FILE_DIR:${target}>/qt.conf"
+    #    COMMAND "${CMAKE_COMMAND}" -E echo "Prefix = ${_qt_bin_dir}/../" >> "$<TARGET_FILE_DIR:${target}>/qt.conf"
+    #)
+    
     # install(CODE ...) doesn't support generator expressions, but
     # file(GENERATE ...) does - store the path in a file
     file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}_path"
@@ -103,7 +108,7 @@ function(windeployqt target directory)
     get_target_property(linked_libs ${ARGV0} INTERFACE_LINK_LIBRARIES)
 
     set(dirs)
-    # Add the dependencies of the target to the fixup search path
+    # Add the dependencies of the target to the fixup search path and to the linker search path
     foreach(liked_lib ${linked_libs})
         if(TARGET ${liked_lib})
             get_target_property(lib_path ${liked_lib} LOCATION)
@@ -123,6 +128,8 @@ function(windeployqt target directory)
         list(APPEND dirs "${lib_dir}/lib")
         list(APPEND dirs "${lib_dir}/bin")
     endforeach()
+
+    link_directories(${dirs})
 
     install(CODE
         "

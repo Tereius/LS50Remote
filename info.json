@@ -5,7 +5,7 @@
         "patch": 0
     },
     "projectName": "LS50Remote",
-    "projectDescription": "Control your LS50 via TCP",
+    "projectDescription": "A tiny app that controls KEF LS50 Wireless loudspeaker via TCP/IP",
     "vendor": "Björn Stresing",
     "contact": "bjoern.stresing@gmx.de",
     "domain": "com.github.Tereius",

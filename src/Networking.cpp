@@ -35,14 +35,14 @@ Networking *Networking::getGlobal() {
 
 void Networking::connectToHost(const QString &rHostName, qint16 port) {
 
-	mpSocket->close();
-	mpSocket->disconnectFromHost();
+	disconnectFromHost();
 	connect(mpSocket, &QTcpSocket::connected, this,
 	        [this, rHostName]() {
 		        qInfo() << "Connected to host" << rHostName;
 		        mConnected = true;
 		        emit connectionStateChanged(mConnected);
 		        mpPollTimer->stop();
+		        mpPollTimer->setInterval(mReconnectMs);
 	        },
 	        Qt::QueuedConnection);
 
@@ -66,12 +66,17 @@ void Networking::connectToHost(const QString &rHostName, qint16 port) {
 	        },
 	        Qt::QueuedConnection);
 
+	mpPollTimer->setInterval(60000);
 	mpSocket->connectToHost(rHostName, port);
 }
 
 void Networking::disconnectFromHost() {
 
+	mConnected = false;
+	emit connectionStateChanged(mConnected);
+	mpPollTimer->stop();
 	mpPollTimer->disconnect(this);
+	mpSocket->disconnect(this);
 	mpSocket->close();
 	mpSocket->disconnectFromHost();
 }
