@@ -40,20 +40,23 @@ endif()
 function(windeployqt target directory)
 
     # Run windeployqt immediately after build
-    #add_custom_command(TARGET ${target} POST_BUILD
-    #    COMMAND "${CMAKE_COMMAND}" -E
-    #        env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
-    #            --verbose 0
-    #            --no-compiler-runtime
-    #            --no-angle
-    #            --no-opengl-sw
-    #            \"$<TARGET_FILE:${target}>\"
-    #)
-
-    #add_custom_command(TARGET ${target} POST_BUILD
-    #    COMMAND "${CMAKE_COMMAND}" -E echo "[Paths]" > "$<TARGET_FILE_DIR:${target}>/qt.conf"
-    #    COMMAND "${CMAKE_COMMAND}" -E echo "Prefix = ${_qt_bin_dir}/../" >> "$<TARGET_FILE_DIR:${target}>/qt.conf"
-    #)
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E
+            env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+                --verbose 0
+                --no-compiler-runtime
+                --no-angle
+                --no-opengl-sw
+                --no-patchqt
+                --no-plugins
+                --no-quick-import
+                --no-translations
+                --no-system-d3d-compiler
+                --no-webkit2
+                \"$<TARGET_FILE:${target}>\"
+        COMMAND "${CMAKE_COMMAND}" -E echo "[Paths]" > "$<TARGET_FILE_DIR:${target}>/qt.conf"
+        COMMAND "${CMAKE_COMMAND}" -E echo "Prefix = ${_qt_bin_dir}/../" >> "$<TARGET_FILE_DIR:${target}>/qt.conf"
+    )
     
     # install(CODE ...) doesn't support generator expressions, but
     # file(GENERATE ...) does - store the path in a file
@@ -129,7 +132,7 @@ function(windeployqt target directory)
         list(APPEND dirs "${lib_dir}/bin")
     endforeach()
 
-    link_directories(${dirs})
+    link_directories("${dirs}")
 
     install(CODE
         "
