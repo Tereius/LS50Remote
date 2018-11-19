@@ -14,7 +14,7 @@ class LS50RemoteConan(ConanFile):
     requires = "Qt/[>=5.10]@tereius/stable"
     settings = "os", "compiler", "build_type", "arch"
     options = {"portable": [True, False]}
-    default_options = "portable=True", "Qt:shared=True", "Qt:qtbase=True", "Qt:qttranslations=True", "Qt:qttools=True", "Qt:qtsvg=True", "Qt:qtdeclarative=True", "Qt:qtgraphicaleffects=True", "Qt:qtquickcontrols2=True"
+    default_options = "portable=True", "Qt:shared=True", "Qt:qtbase=True", "Qt:GUI=True", "Qt:qttranslations=True", "Qt:qttools=True", "Qt:qtsvg=True", "Qt:widgets=True", "Qt:qtdeclarative=True", "Qt:qtgraphicaleffects=True", "Qt:qtquickcontrols2=True"
     generators = "cmake"
     exports = "info.json"
     exports_sources = "*"
@@ -35,4 +35,4 @@ class LS50RemoteConan(ConanFile):
 
     def package(self):
         cmake = self.configure_cmake()
-        cmake.install()
+        cmake.build(target="PACKAGE")
