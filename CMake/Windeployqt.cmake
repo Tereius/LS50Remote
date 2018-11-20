@@ -48,6 +48,7 @@ function(windeployqt target directory)
                 --no-angle
                 --no-opengl-sw
                 --no-patchqt
+                #--qmldir "${qml_dir}"
                 --no-plugins
                 --no-quick-import
                 --no-translations
@@ -69,6 +70,10 @@ function(windeployqt target directory)
     install(CODE
         "
         file(READ \"${CMAKE_CURRENT_BINARY_DIR}/${target}_path\" _file)
+        if(NOT EXISTS \"${qml_dir}/QtQuick/PrivateWidgets\")
+            message(WARNING \"Workaround for bug: windeployqt is missing PrivateWidgets. Generating empty folder.\")
+            file(MAKE_DIRECTORY \"${qml_dir}/QtQuick/PrivateWidgets\")
+        endif()
         execute_process(
             COMMAND \"${CMAKE_COMMAND}\" -E
                 env PATH=\"${_qt_bin_dir}\" \"${WINDEPLOYQT_EXECUTABLE}\"
