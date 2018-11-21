@@ -35,13 +35,18 @@ class LS50RemoteConan(ConanFile):
             self.build_requires("NSIS/3.03@tereius/stable")
 
     def build(self):
-        tools.replace_in_file(os.path.join(self.build_folder, "CMakeLists.txt"), "### CONAN_BEACON ###", 'include(%s)\n%s' % (os.path.join(self.install_folder, "conanbuildinfo.cmake").replace("\\", "/"), "conan_basic_setup()"), strict=False)
         cmake = self.configure_cmake()
         cmake.build()
 
     def package(self):
         cmake = self.configure_cmake()
         cmake.build(target="PACKAGE")
+        if self.options.portable:
+            self.copy("LS50Remote.zip")
+        else:
+            self.copy("LS50Remote.exe")
+
+    def deploy(self):
         if self.options.portable:
             self.copy("LS50Remote.zip")
         else:

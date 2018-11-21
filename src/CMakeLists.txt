@@ -42,14 +42,5 @@ include(Windeployqt)
 windeployqt(${PROJECT_NAME} "bin")
 
 # Workaround: windeployqt is missing Qt.labs modules
-install(CODE
-"
-file(MAKE_DIRECTORY \"\${qml_dir}/Qt/labs/settings\")
-execute_process(
-	COMMAND \"${CMAKE_COMMAND}\" -E
-		copy_directory \"${qml_dir}/Qt/labs/settings\" \"${CMAKE_INSTALL_PREFIX}/bin/Qt/labs/settings\"
-	COMMAND \"${CMAKE_COMMAND}\" -E
-		copy_directory \"${qml_dir}/QtQuick/Layouts\" \"${CMAKE_INSTALL_PREFIX}/bin/QtQuick/Layouts\"
-)
-"
-)
+install(DIRECTORY "${qml_dir}/Qt/labs/settings" DESTINATION "bin/Qt/labs")
+install(DIRECTORY "${qml_dir}/QtQuick/Layouts" DESTINATION "bin/QtQuick")
