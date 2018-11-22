@@ -25,7 +25,7 @@ void KefDevice::setVolume(int volume) {
 
 	mVolume = volume;
 	mMuted = false;
-	auto hex = QString("532581%1159").arg(volume, 2, 16, QLatin1Char('0')).toLocal8Bit(); // %11 is the placeholder
+	auto hex = QString("532581%1").arg(volume, 2, 16, QLatin1Char('0')).toLocal8Bit(); // %11 is the placeholder
 	nw->sendTcp(QByteArray::fromHex(hex));
 	emit mutedChanged(mMuted);
 	emit volumeChanged(mVolume);
@@ -36,23 +36,39 @@ KefDevice::AudioInput KefDevice::getInput() const {
 	return mInput;
 }
 
+// play pause: 53:31:81:81
+
+// input: 47:30:80 -> 52308112ec (Network)
+// 47:3d:80 -> 52:3d:81:c6:5f
+// 47:27:80 -> 52:27:81:84:b3
+// 47:28:80 -> 52:28:81:86:fa
+// 47:29:80 -> 52:29:81:86:91
+// 47:2a:80 -> 52:2a:81:84:22
+// 47:2b:80 -> 52:2b:81:89:6a
+// 47:2c:80 -> 52:2c:81:88:7b
+// 47:2d:80 -> 52:2d:81:8a:1e
+//
+// 47:25:80 -> 52:25:81:1e:aa (volume)
+
 void KefDevice::setInput(AudioInput input) {
 
 	mInput = input;
 	QString command;
 	switch(input) {
 		case KefDevice::Network:
-			command = "5330811282";
+			command = "53308112";
 			break;
-		case Usb:
+		case KefDevice::Usb:
+			command = "5330811c";
 			break;
 		case KefDevice::Bluetooth:
-			command = "53308119ad";
+			command = "53308119";
 			break;
 		case KefDevice::Aux:
-			command = "5330811a9b";
+			command = "5330811a";
 			break;
 		case KefDevice::Optical:
+			command = "5330811b";
 			break;
 		default:
 			break;
@@ -70,10 +86,10 @@ bool KefDevice::isMuted() const {
 void KefDevice::setMuted(bool muted) {
 
 	if(muted) {
-		auto hex = QString("532581%1159").arg(128, 2, 16, QLatin1Char('0')).toLocal8Bit(); // %11 is the placeholder
+		auto hex = QString("532581%1").arg(128, 2, 16, QLatin1Char('0')).toLocal8Bit(); // %11 is the placeholder
 		nw->sendTcp(QByteArray::fromHex(hex));
 	} else {
-		auto hex = QString("532581%1159").arg(mVolume, 2, 16, QLatin1Char('0')).toLocal8Bit(); // %11 is the placeholder
+		auto hex = QString("532581%1").arg(mVolume, 2, 16, QLatin1Char('0')).toLocal8Bit(); // %11 is the placeholder
 		nw->sendTcp(QByteArray::fromHex(hex));
 	}
 	mMuted = muted;
@@ -82,7 +98,7 @@ void KefDevice::setMuted(bool muted) {
 
 void KefDevice::powerOff() {
 
-	nw->sendTcp(QByteArray::fromHex("5330819b0b"));
+	nw->sendTcp(QByteArray::fromHex("5330819b"));
 }
 
 QString KefDevice::getHost() const {

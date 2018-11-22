@@ -48,10 +48,11 @@ Item {
 			RoundButton {
 				checkable: true
 				enabled: device.connected
-				icon.name: "ic_settings"
+				icon.name: "ic_bluetooth"
 				ButtonGroup.group: btnGroup
 				onClicked: {
-					stack.push()
+					if (checked)
+						device.input = KefDevice.Bluetooth
 				}
 			}
 
