@@ -3,7 +3,7 @@
         "major": 1,
         "minor": 0,
         "patch": 0,
-        "snapshot": true
+        "snapshot": false
     },
     "projectName": "LS50Remote",
     "projectDescription": "A tiny app that controls KEF LS50 Wireless loudspeaker via TCP/IP",
