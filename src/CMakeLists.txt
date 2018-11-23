@@ -5,7 +5,8 @@ set(APP_PORTABLE_MODE ON CACHE BOOL "Install app in portable mode")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(qt_rcc_resources "${PROJECT_SOURCE_DIR}/res/qt_resources.qrc;${PROJECT_SOURCE_DIR}/res/default_icons.qrc")
-source_group("Resource Files" FILES ${qt_rcc_resources})
+set(win_resources "${PROJECT_SOURCE_DIR}/res/win_resources.rc")
+source_group("Resource Files" FILES "${qt_rcc_resources}")
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -32,7 +33,7 @@ set(header_files
 )
 
 qt5_add_resources(resSources ${qt_rcc_resources})
-add_executable(${PROJECT_NAME} WIN32 ${src_files} ${header_files} ${resSources})
+add_executable(${PROJECT_NAME} WIN32 ${src_files} ${header_files} ${resSources} ${win_resources})
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Qml Qt5::Quick Qt5::QuickControls2 Qt5::Widgets Qt5::Network)
 
 # add the install target
