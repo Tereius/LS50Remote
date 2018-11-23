@@ -5,7 +5,7 @@ from conans import ConanFile, CMake, tools
 class LS50RemoteConan(ConanFile):
     jsonInfo = json.loads(tools.load("info.json"))
     name = jsonInfo["projectName"]
-    version = "%u.%u.%u" % (jsonInfo["version"]["major"], jsonInfo["version"]["minor"], jsonInfo["version"]["patch"])
+    version = "%u.%u.%u%s" % (jsonInfo["version"]["major"], jsonInfo["version"]["minor"], jsonInfo["version"]["patch"], "-SNAPSHOT" if jsonInfo["version"]["snapshot"] else "")
     license = jsonInfo["license"]
     url = jsonInfo["repository"]
     description = jsonInfo["projectDescription"]
