@@ -32,6 +32,10 @@ if __name__ == "__main__":
     if 'CONAN_BASE_PROFILE_BUILDTYPE' in os.environ:
         os.system("conan profile update settings.build_type=\"%s\" ./ci-profile" % os.environ['CONAN_BASE_PROFILE_BUILDTYPE'])
 
+    if 'CONAN_OPTIONS' in os.environ:
+        for option in os.environ['CONAN_OPTIONS'].split(','):
+            os.system("conan profile update options.%s ./ci-profile" % option)
+
     user_name = "user"
     user_channel = "testing"
     if 'CONAN_USERNAME' in os.environ:
