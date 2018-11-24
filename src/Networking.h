@@ -31,11 +31,11 @@ public:
 
 signals:
 	void connectionStateChanged(bool connected);
+	void reveicedTcp(QByteArray data);
 
 private:
 	static QNetworkAccessManager *mpNetworkAccess;
 	QTimer *mpPollTimer;
-	QNetworkReply *mpPendingSseReply;
 	QTcpSocket *mpSocket;
 	int mReconnectMs;
 	bool mConnected;

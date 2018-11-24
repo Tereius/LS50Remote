@@ -12,6 +12,7 @@
 #include <QFileInfo>
 #include <QGlobalStatic>
 #include <QIcon>
+#include <QLoggingCategory>
 #include <QMenu>
 #include <QMutex>
 #include <QMutexLocker>
@@ -109,6 +110,14 @@ void writeSettings() {
 
 	QSettings settings;
 	settings.setValue("version", version);
+	if(!settings.contains("logging")) {
+#ifndef NDEBUG
+		settings.setValue("logging", QString("default.debug = true"));
+#else
+		settings.setValue("logging", QString("default.debug = false"));
+#endif
+	}
+	QLoggingCategory::setFilterRules(settings.value("logging").toString());
 	settings.sync();
 }
 
@@ -173,9 +182,16 @@ int main(int argc, char *argv[]) {
 		auto menu = new QMenu();
 		menu->addAction(QObject::tr("show"), window, &QQuickWindow::show);
 		menu->addAction(QObject::tr("exit"), &app, &QGuiApplication::quit);
+		QObject::connect(window, &QWindow::visibilityChanged, qApp, [window](QWindow::Visibility visibility) {
+			if(visibility == QWindow::Minimized) window->setVisible(false);
+		});
 		tray->setContextMenu(menu);
 		QObject::connect(tray, &QSystemTrayIcon::activated, qApp, [window](QSystemTrayIcon::ActivationReason reason) {
-			if(reason == QSystemTrayIcon::Trigger) window->setVisible(true);
+			if(reason == QSystemTrayIcon::Trigger) {
+				window->setVisible(true);
+				window->setVisibility(QWindow::Windowed);
+				window->requestActivate();
+			}
 		});
 	} else {
 		app.setQuitOnLastWindowClosed(true);

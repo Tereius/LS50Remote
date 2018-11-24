@@ -35,20 +35,36 @@ Item {
 
 			RoundButton {
 				checkable: true
-				checked: true
+				checked: device.input === KefDevice.Network
 				enabled: device.connected
 				icon.name: "ic_wifi"
 				ButtonGroup.group: btnGroup
-				onCheckedChanged: {
+				onClicked: {
 					if (checked)
 						device.input = KefDevice.Network
 				}
 			}
 
 			RoundButton {
+
+				RoundButton {
+					id: pr
+					visible: false
+					checked: parent.checked
+				}
+
 				checkable: true
+				checked: device.input === KefDevice.Bluetooth
+						 || device.input === KefDevice.BluetoothNC
 				enabled: device.connected
 				icon.name: "ic_bluetooth"
+				icon.color: {
+					if (checked) {
+						if (device.input === KefDevice.BluetoothNC)
+							return "red"
+					}
+					return pr.icon.color
+				}
 				ButtonGroup.group: btnGroup
 				onClicked: {
 					if (checked)
@@ -58,10 +74,11 @@ Item {
 
 			RoundButton {
 				checkable: true
+				checked: device.input === KefDevice.Aux
 				enabled: device.connected
 				text: "AUX"
 				ButtonGroup.group: btnGroup
-				onCheckedChanged: {
+				onClicked: {
 					if (checked)
 						device.input = KefDevice.Aux
 				}
@@ -69,10 +86,11 @@ Item {
 
 			RoundButton {
 				checkable: true
+				checked: device.input === KefDevice.Optical
 				enabled: device.connected
 				text: "OPT"
 				ButtonGroup.group: btnGroup
-				onCheckedChanged: {
+				onClicked: {
 					if (checked)
 						device.input = KefDevice.Optical
 				}
@@ -80,10 +98,11 @@ Item {
 
 			RoundButton {
 				checkable: true
+				checked: device.input === KefDevice.Usb
 				enabled: device.connected
 				text: "PC"
 				ButtonGroup.group: btnGroup
-				onCheckedChanged: {
+				onClicked: {
 					if (checked)
 						device.input = KefDevice.Usb
 				}
@@ -115,13 +134,32 @@ Item {
 			enabled: device.connected
 
 			from: 0
-			value: 0
+			value: device.volume
 			to: 100
 			stepSize: 1
 
 			onMoved: {
 
 				device.volume = value
+			}
+
+			MouseArea {
+
+				anchors.fill: parent
+
+				propagateComposedEvents: true
+
+				onPressed: {
+					mouse.accepted = false
+				}
+
+				onWheel: {
+					var steps = wheel.angleDelta.y / 15
+					if (steps > 0)
+						device.volume += 1
+					else
+						device.volume -= 1
+				}
 			}
 		}
 

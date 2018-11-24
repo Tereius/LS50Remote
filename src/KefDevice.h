@@ -2,6 +2,8 @@
 #include <QObject>
 
 
+class QTimer;
+
 class KefDevice : public QObject {
 
 	Q_OBJECT
@@ -12,10 +14,11 @@ class KefDevice : public QObject {
 	Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY mutedChanged)
 
 public:
-	enum AudioInput { Network = 0, Bluetooth, Aux, Optical, Usb };
+	enum AudioInput { Network = 0, Bluetooth, BluetoothNC, Aux, Optical, Usb };
 	Q_ENUM(AudioInput)
 
 	KefDevice(QObject *pParent = nullptr);
+	virtual ~KefDevice();
 	Q_INVOKABLE void powerOff();
 	bool isConnected() const;
 	int getVolume() const;
@@ -34,9 +37,14 @@ signals:
 	void mutedChanged(bool muted);
 	void hostChanged(const QString &rHost);
 
+private slots:
+	void receivedPollMessage(QByteArray msg);
+	void pollForChanged();
+
 private:
 	int mVolume;
 	AudioInput mInput;
 	bool mMuted;
 	QString mHost;
+	QTimer *mpPollTimer;
 };

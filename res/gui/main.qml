@@ -9,6 +9,10 @@ ApplicationWindow {
 	id: window
 	width: 365
 	height: 120
+	minimumWidth: 365
+	minimumHeight: 120
+	maximumWidth: 265 * 2
+	maximumHeight: 120 * 2
 	visible: false
 	flags: Qt.Window
 	title: "LS50 Remote Control"
