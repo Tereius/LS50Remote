@@ -24,6 +24,7 @@
 #include <QString>
 #include <QSystemTrayIcon>
 #include <QTextStream>
+#include <QTranslator>
 
 
 namespace {
@@ -164,6 +165,15 @@ int main(int argc, char *argv[]) {
 		qWarning() << "Couldn't open log file: " << log_file.errorString() << log_file.fileName();
 		qInstallMessageHandler(fatal_dbug_msg_handler);
 	}
+
+	QTranslator translator;
+	// look up e.g. :/translations/myapp_de.qm
+	if(translator.load(QLocale(), QLatin1String(INFO_PROJECTNAME), "_", QCoreApplication::applicationDirPath()))
+		app.installTranslator(&translator);
+	else
+		qWarning() << "Couldn't load i18n for locale:" << QLocale().uiLanguages();
+
+	app.installTranslator(&translator);
 
 	qmlRegisterType<KefDevice>("com.kef", 1, 0, "KefDevice");
 	qRegisterMetaType<QAbstractSocket::SocketError>();

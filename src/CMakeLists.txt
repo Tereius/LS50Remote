@@ -1,4 +1,4 @@
-find_package(Qt5 COMPONENTS Core Qml Quick QuickControls2 Widgets Network REQUIRED)
+find_package(Qt5 COMPONENTS Core Qml Quick QuickControls2 Widgets Network LinguistTools REQUIRED)
 
 set(APP_PORTABLE_MODE ON CACHE BOOL "Install app in portable mode")
 
@@ -32,8 +32,10 @@ set(header_files
 	KefDevice.h
 )
 
+qt5_create_translation(qmSources ${CMAKE_SOURCE_DIR} "${PROJECT_SOURCE_DIR}/res/i18n/LS50Remote_de_DE.ts")
 qt5_add_resources(resSources ${qt_rcc_resources})
-add_executable(${PROJECT_NAME} WIN32 ${src_files} ${header_files} ${resSources} ${win_resources})
+
+add_executable(${PROJECT_NAME} WIN32 ${src_files} ${header_files} ${resSources} ${qmSources} ${win_resources})
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Qml Qt5::Quick Qt5::QuickControls2 Qt5::Widgets Qt5::Network)
 
 # add the install target
@@ -43,5 +45,6 @@ include(Windeployqt)
 windeployqt(${PROJECT_NAME} "bin")
 
 # Workaround: windeployqt is missing Qt.labs modules
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/LS50Remote_de_DE.qm" DESTINATION "bin")
 install(DIRECTORY "${qml_dir}/Qt/labs/settings" DESTINATION "bin/Qt/labs")
 install(DIRECTORY "${qml_dir}/QtQuick/Layouts" DESTINATION "bin/QtQuick")
