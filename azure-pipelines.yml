@@ -1,0 +1,39 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  batch: false
+
+pool:
+  vmImage: 'vs2015-win2012r2'
+
+steps:
+- script: |
+    pip install conan
+    pip install conan_package_tools
+    conan user
+  displayName: 'Install conan'
+
+- script: python build.py
+  displayName: 'Run build'
+  env: { 
+    CONAN_USERNAME: "tereius",
+    CONAN_BUILD_POLICY: "missing",
+    CONAN_CHANNEL: "stable",
+    CONAN_REMOTES: "https://api.bintray.com/conan/tereius/public-conan, https://api.bintray.com/conan/bincrafters/public-conan",
+    CONAN_SKIP_VS_PROJECTS_UPGRADE: "True",
+    CONAN_BASE_PROFILE_OS: "Windows",
+    CONAN_BASE_PROFILE_OSBUILD: "Windows",
+    CONAN_BASE_PROFILE_ARCH: "x86_64",
+    CONAN_BASE_PROFILE_ARCHBUILD: "x86_64",
+    CONAN_BASE_PROFILE_COMPILER: "Visual Studio",
+    CONAN_BASE_PROFILE_COMPILER_VERSION: "14",
+    CONAN_BASE_PROFILE_BUILDTYPE: "Release",
+    CONAN_VISUAL_VERSIONS: "14",
+    CONAN_VISUAL_RUNTIMES: "MD",
+    CONAN_BUILD_TYPES: "Release",
+    CONAN_ARCHS: "x86_64",
+    CONAN_OPTIONS: "portable=True"
+  }
