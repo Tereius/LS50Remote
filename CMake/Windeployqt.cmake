@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2017 Nathan Osman
+# Copyright (c) 2017 Nathan Osman, Björn Stresing
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,26 +38,6 @@ endif()
 # Add commands that copy the Qt runtime to the target's output directory after
 # build and install the Qt runtime to the specified directory
 function(windeployqt target directory)
-
-    # Run windeployqt immediately after build
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E
-            env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
-                --verbose 0
-                --no-compiler-runtime
-                --no-angle
-                --no-opengl-sw
-                --no-patchqt
-                #--qmldir "${qml_dir}"
-                --no-plugins
-                --no-quick-import
-                --no-translations
-                --no-system-d3d-compiler
-                --no-webkit2
-                \"$<TARGET_FILE:${target}>\"
-        COMMAND "${CMAKE_COMMAND}" -E echo "[Paths]" > "$<TARGET_FILE_DIR:${target}>/qt.conf"
-        COMMAND "${CMAKE_COMMAND}" -E echo "Prefix = ${_qt_bin_dir}/../" >> "$<TARGET_FILE_DIR:${target}>/qt.conf"
-    )
     
     # install(CODE ...) doesn't support generator expressions, but
     # file(GENERATE ...) does - store the path in a file
@@ -100,18 +80,6 @@ function(windeployqt target directory)
         "
     )
 
-    # windeployqt doesn't work correctly with the system runtime libraries,
-    # so we fall back to one of CMake's own modules for copying them over
-    #set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
-    #include(InstallRequiredSystemLibraries)
-    #foreach(lib ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
-    #    get_filename_component(filename "${lib}" NAME)
-    #    add_custom_command(TARGET ${target} POST_BUILD
-    #        COMMAND "${CMAKE_COMMAND}" -E
-    #            copy_if_different "${lib}" \"$<TARGET_FILE_DIR:${target}>\"
-    #    )
-    #endforeach()
-
     get_target_property(targetName ${target} NAME)
     get_target_property(linked_libs ${ARGV0} INTERFACE_LINK_LIBRARIES)
 
@@ -137,8 +105,14 @@ function(windeployqt target directory)
         list(APPEND dirs "${lib_dir}/bin")
     endforeach()
 
+    if(MSVC)
+        # Append all linker search paths to the PATH env variable for debugging
+        set_target_properties(${target} PROPERTIES VS_DEBUGGER_ENVIRONMENT "PATH=${dirs};%PATH%")
+    endif()
+
     link_directories("${dirs}")
 
+    # Run cmakes fixup_bundle during installation
     install(CODE
         "
         file(READ \"${CMAKE_CURRENT_BINARY_DIR}/${target}_path\" _file)
@@ -146,6 +120,9 @@ function(windeployqt target directory)
         fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${directory}/${targetName}${CMAKE_EXECUTABLE_SUFFIX}\" \"\" \"${dirs}\")
         "
     )
+
+    # Write a qt.conf file overwriting the Qt prefix path
+    install(CODE "file(WRITE \"${CMAKE_INSTALL_PREFIX}/${directory}/qt.conf\" \"[PATHS]\nPrefix = .\")")
 
 endfunction()
 

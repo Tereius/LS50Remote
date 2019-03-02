@@ -35,3 +35,6 @@
 conaninfo.txt
 conanbuildinfo.txt
 conanbuildinfo.cmake
+
+# VS
+.vs/
