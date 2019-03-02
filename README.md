@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/1rsqvvo8n3t0w9r3?svg=true)](https://ci.appveyor.com/project/Tereius/ls50remote)
+[![Build Status](https://dev.azure.com/bjoernstresing/bjoernstresing/_apis/build/status/Tereius.LS50Remote?branchName=master)](https://dev.azure.com/bjoernstresing/bjoernstresing/_build/latest?definitionId=1&branchName=master)
 
 
 # LS50Remote
