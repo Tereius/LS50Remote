@@ -1,8 +1,8 @@
-pool:
-  vmImage: 'vs2017-win2016'
-
 jobs:
 - job:
+  pool:
+    vmImage: 'vs2017-win2016'
+  timeoutInMinutes: 0
   strategy:
     matrix:
       Portable:
