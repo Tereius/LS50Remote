@@ -6,9 +6,9 @@ jobs:
   strategy:
     matrix:
       Portable:
-        portable: "true"
+        portable: "True"
       Installer:
-        portable: "false"
+        portable: "False"
   steps:
   - task: UsePythonVersion@0
     inputs:
