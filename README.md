@@ -6,4 +6,4 @@ A tiny app that controls KEF LS50 Wireless loudspeaker via TCP.
 
 [Download](https://github.com/Tereius/LS50Remote/releases)
 
-![preview](https://image.ibb.co/hmHgNA/LSctrl.png)
+![preview](https://user-images.githubusercontent.com/18425553/190008645-42379f02-2675-4e12-97ff-ba0ed8f701f5.png)
