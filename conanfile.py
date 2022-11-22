@@ -11,8 +11,8 @@ class LS50RemoteConan(ConanFile):
     description = jsonInfo["projectDescription"]
     author = jsonInfo["vendor"]
     homepage = jsonInfo["repository"]
-    requires = "Qt/[>=5.10]@tereius/stable"
-    settings = {"os": ["Windows"], "compiler": None, "build_type": None, "arch": None}
+    requires = "Qt/[^5.14]@tereius/stable"
+    settings = {"os": ["Windows", "Linux"], "compiler": None, "build_type": None, "arch": None}
     options = {"portable": [True, False]}
     default_options = "portable=True", "Qt:shared=True", "Qt:qtbase=True", "Qt:GUI=True", "Qt:qttranslations=True", "Qt:qttools=True", "Qt:qtsvg=True", "Qt:widgets=True", "Qt:qtdeclarative=True", "Qt:qtgraphicaleffects=True", "Qt:qtquickcontrols2=True"
     generators = "cmake"

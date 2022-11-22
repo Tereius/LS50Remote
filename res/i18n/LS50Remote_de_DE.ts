@@ -4,12 +4,12 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../src/main.cpp" line="193"/>
+        <location filename="../../src/main.cpp" line="196"/>
         <source>show</source>
         <translation>öffnen</translation>
     </message>
     <message>
-        <location filename="../../src/main.cpp" line="194"/>
+        <location filename="../../src/main.cpp" line="197"/>
         <source>exit</source>
         <translation>schließen</translation>
     </message>

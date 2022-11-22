@@ -1,7 +1,10 @@
 #include "KefDevice.h"
 #include "Networking.h"
 #include "info.h"
+#include <QtGlobal>
+#ifdef Q_OS_WIN
 #include "qt_windows.h"
+#endif
 #include <QAbstractSocket>
 #include <QApplication>
 #include <QCommandLineParser>
