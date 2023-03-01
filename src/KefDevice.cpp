@@ -16,7 +16,7 @@ KefDevice::KefDevice(QObject *pParent /*= nullptr*/) :
 	QSettings settings;
 	mpPollTimer->setInterval(3000);
 	setHost(settings.value("host").toString());
-	connect(nw, &Networking::connectionStateChanged, this, [this](bool connected) {
+	connect(netw, &Networking::connectionStateChanged, this, [this](bool connected) {
 		if(connected) {
 			pollForChanged();
 			mpPollTimer->start();
@@ -25,19 +25,19 @@ KefDevice::KefDevice(QObject *pParent /*= nullptr*/) :
 		}
 		emit connectedChanged(connected);
 	});
-	connect(nw, &Networking::reveicedTcp, this, &KefDevice::receivedPollMessage);
+	connect(netw, &Networking::reveicedTcp, this, &KefDevice::receivedPollMessage);
 	connect(mpPollTimer, &QTimer::timeout, this, &KefDevice::pollForChanged);
 }
 
 KefDevice::~KefDevice() {
 
-	nw->disconnect(this);
+	netw->disconnect(this);
 	mpPollTimer->deleteLater();
 }
 
 bool KefDevice::isConnected() const {
 
-	return nw->isConnected();
+	return netw->isConnected();
 }
 
 int KefDevice::getVolume() const {
@@ -56,7 +56,7 @@ void KefDevice::setVolume(int volume) {
 		mMuted = false;
 		auto hex = QString("532581%1").arg(volume, 2, 16, QLatin1Char('0')).toLocal8Bit();
 		qDebug() << "changed volume to" << volume << ":" << hex;
-		nw->sendTcp(QByteArray::fromHex(hex));
+		netw->sendTcp(QByteArray::fromHex(hex));
 		emit mutedChanged(mMuted);
 		emit volumeChanged(mVolume);
 	}
@@ -108,7 +108,7 @@ void KefDevice::setInput(AudioInput input) {
 		}
 		if(!command.isNull()) {
 			qDebug() << "changed input:" << command;
-			nw->sendTcp(QByteArray::fromHex(command.toLocal8Bit()));
+			netw->sendTcp(QByteArray::fromHex(command.toLocal8Bit()));
 			QTimer::singleShot(1000, this, &KefDevice::pollForChanged);
 		}
 		emit inputChanged(mInput);
@@ -125,11 +125,11 @@ void KefDevice::setMuted(bool muted) {
 	if(muted) {
 		auto hex = QString("532581%1").arg(128, 2, 16, QLatin1Char('0')).toLocal8Bit();
 		qDebug() << "enabled mute, current volume" << mVolume << ":" << hex;
-		nw->sendTcp(QByteArray::fromHex(hex));
+		netw->sendTcp(QByteArray::fromHex(hex));
 	} else {
 		auto hex = QString("532581%1").arg(mVolume, 2, 16, QLatin1Char('0')).toLocal8Bit();
 		qDebug() << "disabled mute, setting volume" << mVolume << ":" << hex;
-		nw->sendTcp(QByteArray::fromHex(hex));
+		netw->sendTcp(QByteArray::fromHex(hex));
 	}
 	mMuted = muted;
 	emit mutedChanged(mMuted);
@@ -137,8 +137,8 @@ void KefDevice::setMuted(bool muted) {
 
 void KefDevice::powerOff() {
 
-	qDebug() << "power off:" << hex;
-	nw->sendTcp(QByteArray::fromHex("5330819b"));
+	qDebug() << "power off";
+	netw->sendTcp(QByteArray::fromHex("5330819b"));
 }
 
 QString KefDevice::getHost() const {
@@ -153,7 +153,7 @@ void KefDevice::setHost(const QString &rHost) {
 
 	settings.setValue("host", mHost);
 
-	nw->connectToHost(mHost, (qint16)50001);
+	netw->connectToHost(mHost, (qint16)50001);
 	emit hostChanged(mHost);
 }
 
@@ -218,7 +218,7 @@ void KefDevice::receivedPollMessage(QByteArray msg) {
 void KefDevice::pollForChanged() {
 
 	if(isConnected()) {
-		nw->sendTcp(QByteArray::fromHex("473080"));
-		nw->sendTcp(QByteArray::fromHex("472580"));
+		netw->sendTcp(QByteArray::fromHex("473080"));
+		netw->sendTcp(QByteArray::fromHex("472580"));
 	}
 }

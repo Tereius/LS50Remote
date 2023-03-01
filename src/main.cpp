@@ -1,5 +1,6 @@
 #include "KefDevice.h"
 #include "Networking.h"
+#include "AdvancedQmlApplicationEngine.h"
 #include "info.h"
 #include <QtGlobal>
 #ifdef Q_OS_WIN
@@ -19,7 +20,6 @@
 #include <QMenu>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSettings>
@@ -100,8 +100,7 @@ static void dbug_msg_handler(QtMsgType type, const QMessageLogContext &rContext,
 #ifdef _WIN32
 	OutputDebugString(reinterpret_cast<LPCSTR>(qPrintable(text.append("\n"))));
 #elif defined Q_OS_LINUX || defined Q_OS_MAC
-	auto txt = text.append("\n").toStdString();
-	fputs(txt.c_str(), stderr);
+	fputs(qPrintable(text.append("\n")), stderr);
 	fflush(stderr);
 #endif // OS_WIN32
 
@@ -126,19 +125,19 @@ void writeSettings() {
 }
 
 int main(int argc, char *argv[]) {
-
+	//qputenv("QT_DEBUG_PLUGINS", QByteArray("1"));
 	QSettings::setDefaultFormat(QSettings::IniFormat);
 	QCoreApplication::setApplicationName(INFO_PROJECTNAME);
 	QCoreApplication::setApplicationVersion(version);
 	QCoreApplication::setOrganizationName("");
 	QCoreApplication::setOrganizationDomain(INFO_DOMAIN);
-	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+	qInfo() << "cwd" << QDir::currentPath();
+	qInfo() << "locale" << QLocale();
 
 	QApplication app(argc, argv);
 
 #if !defined(NDEBUG) || defined(PORTABLE_MODE)
-	QDir storagePath(QCoreApplication::applicationDirPath() + "/" + QCoreApplication::applicationName());
+	QDir storagePath(QCoreApplication::applicationDirPath());
 #else
 	QDir storagePath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 #endif
@@ -157,8 +156,8 @@ int main(int argc, char *argv[]) {
 		exit(storagePath.removeRecursively() ? 0 : 1);
 	}
 
-	QQuickStyle::setStyle("default");
-	QIcon::setThemeName("default");
+	QQuickStyle::setStyle("Fusion");
+	QIcon::setThemeName("material");
 
 	log_file.setFileName(storagePath.absoluteFilePath(QCoreApplication::applicationName() + ".log"));
 	auto success = log_file.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -171,7 +170,7 @@ int main(int argc, char *argv[]) {
 
 	QTranslator translator;
 	// look up e.g. :/translations/myapp_de.qm
-	if(translator.load(QLocale(), QLatin1String(INFO_PROJECTNAME), "_", QCoreApplication::applicationDirPath()))
+	if(translator.load(QLocale(), QLatin1String(INFO_PROJECTNAME), "_", ":/i18n"))
 		app.installTranslator(&translator);
 	else
 		qWarning() << "Couldn't load i18n for locale:" << QLocale().uiLanguages();
@@ -181,16 +180,33 @@ int main(int argc, char *argv[]) {
 	qmlRegisterType<KefDevice>("com.kef", 1, 0, "KefDevice");
 	qRegisterMetaType<QAbstractSocket::SocketError>();
 
-	QQmlApplicationEngine engine;
-	engine.load(QUrl(QLatin1String("qrc:///gui/main.qml")));
-	if(engine.rootObjects().isEmpty()) return -1;
-	auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-	window->setIcon(QIcon(":/gui/ic_settings_remote_white.png"));
+	AdvancedQmlApplicationEngine qmlEngine;
+
+#ifdef QT_DEBUG
+	auto qmlMainFile = QString("%1/main.qml").arg(QML_DIR);
+	if(QFile::exists(qmlMainFile)) {
+		qInfo() << "QML hot reloading enabled";
+		qmlEngine.setHotReload(true);
+		qmlEngine.loadRootItem(qmlMainFile);
+	} else {
+		qmlEngine.setHotReload(false);
+		qmlEngine.loadRootItem("qrc:/Application/qml/main.qml");
+	}
+#else
+	qmlEngine.setHotReload(false);
+	qmlEngine.loadRootItem("qrc:/Application/qml/main.qml");
+#endif
+
+	auto window = qobject_cast<QQuickWindow *>(qmlEngine.rootObjects().first());
+	if (!window) {
+		qFatal("Missing root object");
+	}
 
 	if(QSystemTrayIcon::isSystemTrayAvailable()) {
+		window->setIcon(QIcon(":/images/ic_settings_remote_white.png"));
 		app.setQuitOnLastWindowClosed(false);
 		auto tray = new QSystemTrayIcon(qApp);
-		tray->setIcon(QIcon(":/gui/ic_settings_remote_white.png"));
+		tray->setIcon(QIcon(":/images/ic_settings_remote_white.png"));
 		tray->setVisible(true);
 		auto menu = new QMenu();
 		menu->addAction(QObject::tr("show"), window, &QQuickWindow::show);

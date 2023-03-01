@@ -1,50 +1,68 @@
-find_package(Qt5 COMPONENTS Core Qml Quick QuickControls2 Widgets Network LinguistTools REQUIRED)
+find_package(QtDeployHelper REQUIRED NO_MODULE)
+include(QtDeployCommon)
+include(AddMaterialIcons)
+include(Linuxdeployqt)
 
-set(APP_PORTABLE_MODE ON CACHE BOOL "Install app in portable mode")
+qt_add_executable(${PROJECT_NAME}
+									main.cpp
+									AdvancedQmlApplicationEngine.h
+									AdvancedQmlApplicationEngine.cpp
+									Networking.h
+									Networking.cpp
+									KefDevice.h
+									KefDevice.cpp
+									${${PROJECT_NAME}_ICONS}
+									)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(qt_rcc_resources "${PROJECT_SOURCE_DIR}/res/qt_resources.qrc;${PROJECT_SOURCE_DIR}/res/default_icons.qrc")
-set(win_resources "${PROJECT_SOURCE_DIR}/res/win_resources.rc")
-source_group("Resource Files" FILES "${qt_rcc_resources}")
+qt_add_qml_module(${PROJECT_NAME}  URI Application  VERSION 1.0 RESOURCE_PREFIX / QML_FILES
+									qml/main.qml
+									qml/settings.qml
+									qml/control.qml
+									)
 
-include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
-
-if(WIN32)
-	add_definitions(-DNOMINMAX)
-	add_definitions(-DWIN32_LEAN_AND_MEAN)
-endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE QML_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml")
 
 if(APP_PORTABLE_MODE)
-	add_definitions(-DPORTABLE_MODE)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE -DPORTABLE_MODE)
 endif()
 
-# -------------------------------App-------------------------------
-set(src_files
-	main.cpp
-	Networking.cpp
-	KefDevice.cpp
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core PRIVATE Qt6::Gui PRIVATE Qt6::Widgets PRIVATE Qt6::Qml PRIVATE Qt6::QuickControls2)
 
-# private header
-set(header_files
-	Networking.h
-	KefDevice.h
-)
+add_material_icon_theme_resource(${PROJECT_NAME} THEME_NAME material ICONS
+																 bluetooth
+																 chevron_left
+																 pause
+																 play_arrow
+																 power_settings_new
+																 report_problem
+																 save
+																 settings
+																 volume_off
+																 volume_up
+																 wifi
+																 )
 
-qt5_create_translation(qmSources ${CMAKE_SOURCE_DIR} "${PROJECT_SOURCE_DIR}/res/i18n/LS50Remote_de_DE.ts")
-qt5_add_resources(resSources ${qt_rcc_resources})
+qt_add_resources(${PROJECT_NAME} images PREFIX / BASE images FILES
+								 images/ic_settings_remote_black.png
+								 images/ic_settings_remote_white.png
+								 )
 
-add_executable(${PROJECT_NAME} WIN32 ${src_files} ${header_files} ${resSources} ${qmSources} ${win_resources})
-target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Qml Qt5::Quick Qt5::QuickControls2 Qt5::Widgets Qt5::Network)
+qt_add_translations(${PROJECT_NAME} TS_FILES
+										i18n/LS50Remote_de_DE.ts
+										)
 
-# add the install target
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin ARCHIVE DESTINATION lib PUBLIC_HEADER DESTINATION include)
+install(TARGETS ${PROJECT_NAME}
+				BUNDLE  DESTINATION .
+				RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+				)
 
-include(Windeployqt)
-windeployqt(${PROJECT_NAME} "bin")
+linuxdeployqt(${PROJECT_NAME})
 
-# Workaround: windeployqt is missing Qt.labs modules
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/LS50Remote_de_DE.qm" DESTINATION "bin")
-install(DIRECTORY "${qml_dir}/Qt/labs/settings" DESTINATION "bin/Qt/labs")
-install(DIRECTORY "${qml_dir}/QtQuick/Layouts" DESTINATION "bin/QtQuick")
+#qt_generate_deploy_qml_app_script(
+#				TARGET ${PROJECT_NAME}
+#				FILENAME_VARIABLE deploy_script
+#				NO_UNSUPPORTED_PLATFORM_ERROR
+#				DEPLOY_USER_QML_MODULES_ON_UNSUPPORTED_PLATFORM
+#)
+
+#install(SCRIPT ${deploy_script})

@@ -55,7 +55,7 @@ void Networking::connectToHost(const QString &rHostName, qint16 port) {
 	 Qt::QueuedConnection);
 
 	connect(
-	 mpSocket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), this,
+	 mpSocket, &QAbstractSocket::errorOccurred, this,
 	 [this](QAbstractSocket::SocketError socketError) { qInfo() << "TCP socket error:" << mpSocket->errorString(); }, Qt::QueuedConnection);
 
 	connect(

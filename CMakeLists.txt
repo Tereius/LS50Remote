@@ -1,16 +1,26 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.21)
 # Set a default search path for CMake modules
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+set(CMAKE_MODULE_PATH  "${CMAKE_SOURCE_DIR}/CMake" "${CMAKE_MODULE_PATH}")
 include(JSONParser)
 
 # Parse the info.json and write a info.h file
 file(READ info.json jsonInfo)
 sbeParseJson(info jsonInfo)
 
-project(${info.projectName})
-set(VERSION_MAJOR ${info.version.major})
-set(VERSION_MINOR ${info.version.minor})
-set(VERSION_PATCH ${info.version.patch})
+project(${info.projectName} VERSION "${info.version.major}.${info.version.minor}.${info.version.patch}" LANGUAGES CXX)
+
+#set(CMAKE_PREFIX_PATH ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} ${CMAKE_PREFIX_PATH})
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Check if we use conan
+#if(EXISTS "${PROJECT_BINARY_DIR}/conanbuildinfo.cmake")
+#	include("${PROJECT_BINARY_DIR}/conanbuildinfo.cmake")
+#	conan_basic_setup()
+#elseif(EXISTS "${PROJECT_SOURCE_DIR}/conanbuildinfo.cmake")
+#	include("${PROJECT_SOURCE_DIR}/conanbuildinfo.cmake")
+#	conan_basic_setup()
+#endif()
 
 # Configure a header file to pass some of the CMake settings to the source code.
 include_directories("${PROJECT_BINARY_DIR}/src")
@@ -25,53 +35,34 @@ foreach(var ${info})
 	endif()
 endforeach()
 
-# Check if we use conan
-if (EXISTS "${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake")
-	include("${CMAKE_SOURCE_DIR}/conanbuildinfo.cmake")
-	conan_basic_setup()
-elseif(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-	include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-	conan_basic_setup()
-endif()
+include(FeatureSummary)
+feature_summary(WHAT REQUIRED_PACKAGES_NOT_FOUND FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
-# If build type is empty and there is no multi-configuration generator (like Visual Studio) choose release build.
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Qml Quick QuickControls2 Linguist)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "Default Targets")
+#find_package(Qt6Widgets REQUIRED NO_MODULE)
+#find_package(Qt6Gui REQUIRED NO_MODULE)
+#find_package(Qt6QSvgPlugin REQUIRED NO_MODULE PATH_SUFFIXES lib/cmake/Qt6Gui)
+#find_package(Qt6QSvgIconPlugin REQUIRED NO_MODULE PATH_SUFFIXES lib/cmake/Qt6Gui)
+#find_package(Qt6Xml REQUIRED NO_MODULE)
+#find_package(Qt6Svg REQUIRED NO_MODULE)
+#find_package(Qt6Qml REQUIRED NO_MODULE)
+#find_package(Qt6QmlWorkerScript REQUIRED NO_MODULE)
+#find_package(Qt6Quick REQUIRED NO_MODULE)
+#find_package(Qt6QuickControls2 REQUIRED NO_MODULE)
+#find_package(Qt6Core5Compat REQUIRED NO_MODULE)
+#find_package(Qt6SvgWidgets REQUIRED NO_MODULE)
 
-# Handle RPATH stuff
-if (UNIX)
-	set(RPATH_ORIGIN false CACHE BOOL "Set the RPATH to $ORIGIN? Helpful for bundles")
+#find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
+#find_package(Qt6 REQUIRED COMPONENTS Core)
 
-	# Use, i.e. don't skip the full RPATH for the build tree
-	set(CMAKE_SKIP_BUILD_RPATH  OFF)
-	# When building, don't use the install RPATH already
-	# (but later on when installing)
-	set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
-	if(RPATH_ORIGIN)
-		set(CMAKE_INSTALL_RPATH "$ORIGIN/")
-	else()
-		set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-	endif()
-	# Add the automatically determined parts of the RPATH
-	# which point to directories outside the build tree to the install RPATH
-	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-	# The RPATH to be used when installing, but only if it's not a system directory
-	if(NOT RPATH_ORIGIN)
-		list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-		if("${isSystemDir}" STREQUAL "-1")
-			set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-		endif()
-	endif()
-endif()
+qt_standard_project_setup()
 
 add_subdirectory(src)
 
-# Handle CPack stuff
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
+# Handle CPack stuff
 set(CPACK_PACKAGE_NAME "${info.projectName}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${info.projectDescription}")
 set(CPACK_PACKAGE_VENDOR "${info.vendor}")
@@ -81,8 +72,8 @@ set(CPACK_PACKAGE_VERSION_MAJOR ${info.version.major})
 set(CPACK_PACKAGE_VERSION_MINOR ${info.version.minor})
 set(CPACK_PACKAGE_VERSION_PATCH ${info.version.patch})
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
-set(CPACK_PACKAGE_FILE_NAME  ${PROJECT_NAME})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
+set(CPACK_PACKAGE_FILE_NAME  "${PROJECT_NAME}")
 set(CPACK_PACKAGE_EXECUTABLES "${PROJECT_NAME};${PROJECT_NAME}")
 
 set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "ExecWait '\\\"$INSTDIR\\\\bin\\\\${PROJECT_NAME}${CMAKE_EXECUTABLE_SUFFIX}\\\" -u'")

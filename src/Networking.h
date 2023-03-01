@@ -3,11 +3,10 @@
 #include <QObject>
 
 class QNetworkAccessManager;
-class QNetworkReply;
 class QTimer;
 class QTcpSocket;
 
-#define nw Networking::getGlobal()
+#define netw Networking::getGlobal()
 
 #define DEFAULT_USER_AGENT \
 	QString("%1 %2.%3.%4").arg(INFO_PROJECTNAME).arg(INFO_VERSION_MAJOR).arg(INFO_VERSION_MINOR).arg(INFO_VERSION_PATCH).toLatin1()

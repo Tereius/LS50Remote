@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>gui/main.qml</file>
-        <file>gui/ic_settings_remote_black.png</file>
-        <file>gui/ic_settings_remote_white.png</file>
-        <file>gui/control.qml</file>
-        <file>gui/settings.qml</file>
-    </qresource>
-</RCC>
