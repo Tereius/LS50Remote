@@ -1,7 +1,9 @@
 #include "KefDevice.h"
 #include "Networking.h"
 #include "info.h"
+#ifdef _WIN32
 #include "qt_windows.h"
+#endif
 #include <QAbstractSocket>
 #include <QApplication>
 #include <QCommandLineParser>
