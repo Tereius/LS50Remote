@@ -60,7 +60,7 @@ class LS50RemoteConan(ConanFile):
         for require, dependency in self.dependencies.items():
             path = dependency.runenv_info.vars(self, scope='run').get("QML_IMPORT_PATH")
             if path is not None:
-                qml_import_path.append(path)
+                qml_import_path.append(path.replace(os.sep, '/'))
         tc.variables["QT_QML_OUTPUT_DIRECTORY"] = "${CMAKE_CURRENT_LIST_DIR}/src"
         qml_import_path.append("${QT_QML_OUTPUT_DIRECTORY}")
         tc.variables["QML_IMPORT_PATH"] = ";".join(qml_import_path)
