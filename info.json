@@ -1,16 +1,28 @@
 {
-    "version": {
-        "major": 1,
-        "minor": 1,
-        "patch": 0,
-        "snapshot": false
-    },
-    "projectName": "LS50Remote",
-    "projectDescription": "A tiny app that controls KEF LS50 Wireless loudspeaker via TCP/IP",
-    "vendor": "Björn Stresing",
-    "contact": "bjoern.stresing@gmx.de",
-    "domain": "com.github.Tereius",
-    "copyrightYear": "2018",
-    "license": "GPLv3",
-    "repository": "https://github.com/Tereius/LS50Remote"
+  "version": {
+    "major": 1,
+    "minor": 2,
+    "patch": 0,
+    "snapshot": true
+  },
+  "projectName": "LS50Remote",
+  "projectDescription": "A tiny app that controls KEF LS50 Wireless loudspeaker via TCP/IP",
+  "projectId": 1763141272,
+  "vendor": "Björn Stresing",
+  "contact": "bjoern.stresing@gmx.de",
+  "domain": "com.github.tereius",
+  "copyrightYear": "2018",
+  "repository": "https://github.com/Tereius/LS50Remote",
+  "topics": [
+    "Qt",
+    "QML",
+    "KEF",
+    "LS50"
+  ],
+  "categories": [
+    "AudioVideo",
+    "Audio"
+  ],
+  "homepage": "https://github.com/Tereius/LS50Remote",
+  "license": "GPLv3"
 }

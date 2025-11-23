@@ -1,68 +1,72 @@
-find_package(QtDeployHelper REQUIRED NO_MODULE)
-include(QtDeployCommon)
-include(AddMaterialIcons)
-include(Linuxdeployqt)
+find_package(QtAppBase REQUIRED)
+include(AppImage)
+include(MaterialIcons)
 
-qt_add_executable(${PROJECT_NAME}
-									main.cpp
-									AdvancedQmlApplicationEngine.h
-									AdvancedQmlApplicationEngine.cpp
-									Networking.h
-									Networking.cpp
-									KefDevice.h
-									KefDevice.cpp
-									${${PROJECT_NAME}_ICONS}
-									)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Network Qml Quick QuickControls2 Svg LinguistTools Widgets)
 
-qt_add_qml_module(${PROJECT_NAME}  URI Application  VERSION 1.0 RESOURCE_PREFIX / QML_FILES
-									qml/main.qml
-									qml/settings.qml
-									qml/control.qml
-									)
+# Download Roboto fonts
+if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fonts/Roboto.ttf)
+    file(DOWNLOAD "https://github.com/google/fonts/raw/refs/heads/main/ofl/roboto/Roboto%5Bwdth,wght%5D.ttf" ${CMAKE_CURRENT_SOURCE_DIR}/fonts/Roboto.ttf)
+endif ()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE QML_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml")
+qt_add_executable(LS50Remote
+        main.cpp
+        Networking.h
+        Networking.cpp
+        KefDevice.h
+        KefDevice.cpp
+)
 
-if(APP_PORTABLE_MODE)
-	target_compile_definitions(${PROJECT_NAME} PRIVATE -DPORTABLE_MODE)
-endif()
+set_source_files_properties(${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_mono.svg PROPERTIES
+        QT_RESOURCE_ALIAS images/LS50Remote_mono.svg
+)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core PRIVATE Qt6::Gui PRIVATE Qt6::Widgets PRIVATE Qt6::Qml PRIVATE Qt6::QuickControls2)
+qt_add_qml_module(
+        LS50Remote
 
-add_material_icon_theme_resource(${PROJECT_NAME} THEME_NAME material ICONS
-																 bluetooth
-																 chevron_left
-																 pause
-																 play_arrow
-																 power_settings_new
-																 report_problem
-																 save
-																 settings
-																 volume_off
-																 volume_up
-																 wifi
-																 )
+        URI
+        com.kef
 
-qt_add_resources(${PROJECT_NAME} images PREFIX / BASE images FILES
-								 images/ic_settings_remote_black.png
-								 images/ic_settings_remote_white.png
-								 )
+        QML_FILES
+        qml/main.qml
+        qml/settings.qml
+        qml/control.qml
 
-qt_add_translations(${PROJECT_NAME} TS_FILES
-										i18n/LS50Remote_de_DE.ts
-										)
+        RESOURCES
+        fonts/Roboto.ttf
+        ${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_mono.svg
+)
 
-install(TARGETS ${PROJECT_NAME}
-				BUNDLE  DESTINATION .
-				RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-				)
+target_link_libraries(LS50Remote PRIVATE QtAppBase PRIVATE Qt6::Core PRIVATE Qt6::Gui PRIVATE Qt6::Network PRIVATE Qt6::Qml PRIVATE Qt6::Quick PRIVATE Qt6::QuickControls2 PRIVATE Qt6::Widgets PRIVATE Qt6::Svg)
 
-linuxdeployqt(${PROJECT_NAME})
+add_material_icon_theme_resource(LS50Remote THEME_NAME material ICONS
+        bluetooth
+        chevron-left
+        pause
+        power
+        alert
+        content-save
+        cog-outline
+        volume-off
+        volume-high
+        wifi
+)
 
-#qt_generate_deploy_qml_app_script(
-#				TARGET ${PROJECT_NAME}
-#				FILENAME_VARIABLE deploy_script
-#				NO_UNSUPPORTED_PLATFORM_ERROR
-#				DEPLOY_USER_QML_MODULES_ON_UNSUPPORTED_PLATFORM
-#)
+qt_add_translations(LS50Remote TS_FILES
+        "${CMAKE_SOURCE_DIR}/resources/i18n/LS50Remote_en.ts"
+        "${CMAKE_SOURCE_DIR}/resources/i18n/LS50Remote_de.ts"
+)
 
-#install(SCRIPT ${deploy_script})
+register_icon(LS50Remote
+        ICO "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote.ico"
+        ICNS "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote.icns"
+        SCALABLE "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote.svg"
+        512x512 "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_512.png"
+        256x256 "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_256.png"
+        128x128 "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_128.png"
+        64x64 "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_64.png"
+        48x48 "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_48.png"
+        32x32 "${CMAKE_SOURCE_DIR}/resources/icons/LS50Remote_32.png"
+)
+
+install_app(LS50Remote)

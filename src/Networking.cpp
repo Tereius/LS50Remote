@@ -1,20 +1,12 @@
 #include "Networking.h"
-#include <QCoreApplication>
-#include <QGlobalStatic>
+#include <QApplication>
 #include <QNetworkAccessManager>
 #include <QTcpSocket>
 #include <QTimer>
 
 
-Q_GLOBAL_STATIC(Networking, globalNetworking)
-
-
 Networking::Networking(QObject *pParent /*= nullptr*/) :
- QObject(pParent),
- mpPollTimer(new QTimer()),
- mpSocket(new QTcpSocket()),
- mReconnectMs(3000),
- mConnected(false) {
+ QObject(pParent), mpPollTimer(new QTimer()), mpSocket(new QTcpSocket(this)), mReconnectMs(3000), mConnected(false) {
 
 	mpPollTimer->setTimerType(Qt::VeryCoarseTimer);
 }
@@ -23,11 +15,6 @@ Networking::~Networking() {
 
 	mpPollTimer->deleteLater();
 	disconnectFromHost();
-}
-
-Networking *Networking::getGlobal() {
-
-	return globalNetworking;
 }
 
 void Networking::connectToHost(const QString &rHostName, qint16 port) {
@@ -66,8 +53,7 @@ void Networking::connectToHost(const QString &rHostName, qint16 port) {
 	 },
 	 Qt::QueuedConnection);
 
-	connect(
-	 mpSocket, &QTcpSocket::readyRead, this, [this]() { emit reveicedTcp(mpSocket->readAll()); }, Qt::QueuedConnection);
+	connect(mpSocket, &QTcpSocket::readyRead, this, [this]() { emit reveicedTcp(mpSocket->readAll()); }, Qt::QueuedConnection);
 
 	mpPollTimer->setInterval(60000);
 	mpSocket->connectToHost(rHostName, port, QIODevice::ReadWrite);
@@ -84,10 +70,8 @@ void Networking::disconnectFromHost() {
 	mpSocket->disconnectFromHost();
 }
 
-void Networking::sendTcp(const QByteArray data) {
+void Networking::sendTcp(const QByteArray &data) {
 
 	mpSocket->write(data);
 	mpSocket->flush();
 }
-
-QNetworkAccessManager *Networking::mpNetworkAccess = new QNetworkAccessManager(qApp);

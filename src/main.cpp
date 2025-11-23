@@ -1,118 +1,29 @@
-#include "KefDevice.h"
-#include "Networking.h"
 #include "AdvancedQmlApplicationEngine.h"
+#include "KefDevice.h"
+#include "QtApplicationBase.h"
 #include "info.h"
-#include <QtGlobal>
-#ifdef Q_OS_WIN
-#include "qt_windows.h"
-#endif
 #include <QAbstractSocket>
 #include <QApplication>
-#include <QCommandLineParser>
-#include <QDateTime>
 #include <QDebug>
-#include <QDir>
 #include <QFile>
-#include <QFileInfo>
-#include <QGlobalStatic>
-#include <QIcon>
+#include <QFontDatabase>
+#include <QImageReader>
 #include <QLoggingCategory>
 #include <QMenu>
-#include <QMutex>
-#include <QMutexLocker>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QString>
 #include <QSystemTrayIcon>
-#include <QTextStream>
 #include <QTranslator>
+#include <QtGlobal>
 
-
-namespace {
-static QFile log_file;
-static QMutex mutex;
-static QString version(QString("%1.%2.%3").arg(INFO_VERSION_MAJOR).arg(INFO_VERSION_MINOR).arg(INFO_VERSION_PATCH));
-} // namespace
-
-static void fatal_dbug_msg_handler(QtMsgType type, const QMessageLogContext &rContext, const QString &rMessage) {
-
-	QMutexLocker mutex_locker(&mutex);
-
-	if(type == QtFatalMsg) {
-		QCoreApplication::instance()->exit(1);
-	}
-}
-
-static void dbug_msg_handler(QtMsgType type, const QMessageLogContext &rContext, const QString &rMessage) {
-
-	QMutexLocker mutex_locker(&mutex);
-
-	auto text = QString("[%1]").arg(QDateTime::currentDateTime().toString("dd/MM/yyyy hh:mm:ss"));
-
-	switch(type) {
-		case QtDebugMsg:
-#ifdef NDEBUG
-			text += QString(" DEBUG    : %1").arg(rMessage);
-#else
-			text += QString(" DEBUG    (%1: %2): %3").arg(rContext.file).arg(rContext.line).arg(rMessage);
-#endif // NDEBUG
-			break;
-
-		case QtInfoMsg:
-#ifdef NDEBUG
-			text += QString(" INFO    : %1").arg(rMessage);
-#else
-			text += QString(" INFO     (%1: %2): %3").arg(rContext.file).arg(rContext.line).arg(rMessage);
-#endif // NDEBUG
-			break;
-
-		case QtWarningMsg:
-#ifdef NDEBUG
-			text += QString(" WARNING  : %1").arg(rMessage);
-#else
-			text += QString(" WARNING  (%1: %2): %3").arg(rContext.file).arg(rContext.line).arg(rMessage);
-#endif
-			break;
-
-		case QtCriticalMsg:
-#ifdef NDEBUG
-			text += QString(" CRITICAL : %1").arg(rMessage);
-#else
-			text += QString(" CRITICAL (%1: %2): %3").arg(rContext.file).arg(rContext.line).arg(rMessage);
-#endif
-			break;
-
-		case QtFatalMsg:
-#ifdef NDEBUG
-			text += QString(" FATAL    : %1").arg(rMessage);
-#else
-			text += QString(" FATAL    (%1: %2): %3").arg(rContext.file).arg(rContext.line).arg(rMessage);
-#endif
-			text += "\nApplication will be terminated due to Fatal-Error.";
-			break;
-	}
-
-	QTextStream tStream(&log_file);
-	tStream << text << "\n";
-
-#ifdef _WIN32
-	OutputDebugString(reinterpret_cast<LPCSTR>(qPrintable(text.append("\n"))));
-#elif defined Q_OS_LINUX || defined Q_OS_MAC
-	fputs(qPrintable(text.append("\n")), stderr);
-	fflush(stderr);
-#endif // OS_WIN32
-
-	if(type == QtFatalMsg) {
-		QCoreApplication::instance()->exit(1);
-	}
-}
 
 void writeSettings() {
 
 	QSettings settings;
-	settings.setValue("version", version);
+	settings.setValue("version", INFO_VERSIONSTRING);
 	if(!settings.contains("logging")) {
 #ifndef NDEBUG
 		settings.setValue("logging", QString("default.debug = true"));
@@ -124,52 +35,27 @@ void writeSettings() {
 	settings.sync();
 }
 
-int main(int argc, char *argv[]) {
-	//qputenv("QT_DEBUG_PLUGINS", QByteArray("1"));
-	QSettings::setDefaultFormat(QSettings::IniFormat);
-	QCoreApplication::setApplicationName(INFO_PROJECTNAME);
-	QCoreApplication::setApplicationVersion(version);
-	QCoreApplication::setOrganizationName("");
-	QCoreApplication::setOrganizationDomain(INFO_DOMAIN);
-	qInfo() << "cwd" << QDir::currentPath();
-	qInfo() << "locale" << QLocale();
+int main(int argc, char **argv) {
 
-	QApplication app(argc, argv);
+	qunsetenv("QT_STYLE_OVERRIDE");
+	qunsetenv("QT_QUICK_CONTROLS_STYLE");
 
-#if !defined(NDEBUG) || defined(PORTABLE_MODE)
-	QDir storagePath(QCoreApplication::applicationDirPath());
-#else
-	QDir storagePath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-#endif
-	QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, storagePath.absolutePath());
-	QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope, storagePath.absolutePath());
-	writeSettings();
-	qInfo() << "Using settings path:" << storagePath.absolutePath();
+	QtApplicationBase<QApplication> app(argc, argv);
 
-	QCommandLineParser parser;
-	parser.addOption({"u", "Uninstall persistent data."});
-	parser.parse(app.arguments());
-
-	if(parser.isSet("u")) {
-
-		// Delete the persistence
-		exit(storagePath.removeRecursively() ? 0 : 1);
+	auto fontsDir = QDir(":/qt/qml/com/kef/fonts");
+	for(const auto font : fontsDir.entryList()) {
+		auto id = QFontDatabase::addApplicationFont(":/qt/qml/com/kef/fonts/" + font);
+		qInfo() << "Added font" << QFontDatabase::applicationFontFamilies(id);
 	}
 
-	QQuickStyle::setStyle("Fusion");
+	qApp->setFont(QFont("Roboto"));
+	qInfo() << qApp->font();
+	QQuickStyle::setStyle("Basic");
 	QIcon::setThemeName("material");
 
-	log_file.setFileName(storagePath.absoluteFilePath(QCoreApplication::applicationName() + ".log"));
-	auto success = log_file.open(QIODevice::WriteOnly | QIODevice::Text);
-	if(success) {
-		qInstallMessageHandler(dbug_msg_handler);
-	} else {
-		qWarning() << "Couldn't open log file: " << log_file.errorString() << log_file.fileName();
-		qInstallMessageHandler(fatal_dbug_msg_handler);
-	}
-
+	qInfo() << QLocale().uiLanguages();
 	QTranslator translator;
-	// look up e.g. :/translations/myapp_de.qm
+	// look up e.g. :/i18n/myapp_de.qm
 	if(translator.load(QLocale(), QLatin1String(INFO_PROJECTNAME), "_", ":/i18n"))
 		app.installTranslator(&translator);
 	else
@@ -177,36 +63,35 @@ int main(int argc, char *argv[]) {
 
 	app.installTranslator(&translator);
 
-	qmlRegisterType<KefDevice>("com.kef", 1, 0, "KefDevice");
 	qRegisterMetaType<QAbstractSocket::SocketError>();
 
 	AdvancedQmlApplicationEngine qmlEngine;
 
 #ifdef QT_DEBUG
-	auto qmlMainFile = QString("%1/main.qml").arg(QML_DIR);
+	auto qmlMainFile = QString("com/kef/qml/main.qml");
 	if(QFile::exists(qmlMainFile)) {
 		qInfo() << "QML hot reloading enabled";
 		qmlEngine.setHotReload(true);
-		qmlEngine.loadRootItem(qmlMainFile);
+		qmlEngine.loadRootItem(qmlMainFile, false);
 	} else {
 		qmlEngine.setHotReload(false);
-		qmlEngine.loadRootItem("qrc:/Application/qml/main.qml");
+		qmlEngine.loadRootItem("qrc:/qt/qml/com/kef/qml/main.qml", false);
 	}
 #else
 	qmlEngine.setHotReload(false);
-	qmlEngine.loadRootItem("qrc:/Application/qml/main.qml");
+	qmlEngine.loadRootItem("qrc:/qt/qml/com/kef/qml/main.qml", false);
 #endif
 
 	auto window = qobject_cast<QQuickWindow *>(qmlEngine.rootObjects().first());
-	if (!window) {
+	if(!window) {
 		qFatal("Missing root object");
 	}
 
 	if(QSystemTrayIcon::isSystemTrayAvailable()) {
-		window->setIcon(QIcon(":/images/ic_settings_remote_white.png"));
+		window->setIcon(QIcon(":/qt/qml/com/kef/images/LS50Remote_mono.svg"));
 		app.setQuitOnLastWindowClosed(false);
 		auto tray = new QSystemTrayIcon(qApp);
-		tray->setIcon(QIcon(":/images/ic_settings_remote_white.png"));
+		tray->setIcon(QIcon(":/qt/qml/com/kef/images/LS50Remote_mono.svg"));
 		tray->setVisible(true);
 		auto menu = new QMenu();
 		menu->addAction(QObject::tr("show"), window, &QQuickWindow::show);

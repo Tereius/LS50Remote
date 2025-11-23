@@ -1,6 +1,7 @@
-import QtQuick 2.10
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.3
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import com.kef
 
 Item {
 
@@ -16,9 +17,9 @@ Item {
 
             flat: true
 
-            icon.name: "chevron_left"
+            icon.name: "chevron-left"
             onClicked: {
-                stack.pop()
+                stack.pop();
             }
         }
 
@@ -30,16 +31,16 @@ Item {
             RoundButton {
 
                 flat: true
-                icon.name: "report_problem"
+                icon.name: "alert"
                 icon.color: "#FFDE23"
-                visible: !device.connected
+                visible: !KefDevice.connected
             }
 
             Label {
 
                 text: qsTr("Couldn't connect to LS50")
                 color: "#FF3223"
-                visible: !device.connected
+                visible: !KefDevice.connected
             }
         }
 
@@ -49,9 +50,9 @@ Item {
 
             flat: true
 
-            icon.name: "save"
+            icon.name: "content-save"
             onClicked: {
-                device.host = hostTextField.text
+                KefDevice.host = hostTextField.text;
             }
         }
 
@@ -63,15 +64,14 @@ Item {
         }
 
         TextField {
-
             id: hostTextField
             Layout.fillWidth: true
 
             placeholderText: qsTr("IP or Host name")
 
             Component.onCompleted: {
-                if (device.host.length > 0)
-                    text = device.host
+                if (KefDevice.host.length > 0)
+                    text = KefDevice.host;
             }
         }
     }

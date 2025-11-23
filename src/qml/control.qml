@@ -1,7 +1,7 @@
-import QtQuick 2.10
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.3
-import com.kef 1.0
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import com.kef
 
 Item {
 
@@ -14,11 +14,11 @@ Item {
 
             Layout.alignment: Qt.AlignLeft
 
-            enabled: device.connected
+            enabled: KefDevice.connected
 
-            icon.name: "power_settings_new"
+            icon.name: "power"
             onClicked: {
-                device.powerOff()
+                KefDevice.powerOff();
             }
         }
 
@@ -35,69 +35,71 @@ Item {
 
             RoundButton {
                 checkable: true
-                checked: device.input === KefDevice.Network
-                enabled: device.connected
+                checked: KefDevice.input === KefDevice.Network
+                enabled: KefDevice.connected
                 icon.name: "wifi"
                 ButtonGroup.group: btnGroup
                 onClicked: {
                     if (checked)
-                        device.input = KefDevice.Network
+                        KefDevice.input = KefDevice.Network;
                 }
             }
 
             RoundButton {
                 checkable: true
-                checked: device.input === KefDevice.Bluetooth
-                         || device.input === KefDevice.BluetoothNC
-                enabled: device.connected
+                checked: KefDevice.input === KefDevice.Bluetooth || KefDevice.input === KefDevice.BluetoothNC
+                enabled: KefDevice.connected
                 icon.name: "bluetooth"
                 icon.color: {
                     if (checked) {
-                        if (device.input === KefDevice.BluetoothNC)
-                            return "red"
+                        if (KefDevice.input === KefDevice.BluetoothNC)
+                            return "red";
                     }
-                    return ""
+                    return palette.buttonText;
                 }
                 ButtonGroup.group: btnGroup
                 onClicked: {
                     if (checked)
-                        device.input = KefDevice.Bluetooth
+                        KefDevice.input = KefDevice.Bluetooth;
                 }
             }
 
             RoundButton {
                 checkable: true
-                checked: device.input === KefDevice.Aux
-                enabled: device.connected
+                checked: KefDevice.input === KefDevice.Aux
+                enabled: KefDevice.connected
                 text: "AUX"
+                font.pointSize: 10
                 ButtonGroup.group: btnGroup
                 onClicked: {
                     if (checked)
-                        device.input = KefDevice.Aux
+                        KefDevice.input = KefDevice.Aux;
                 }
             }
 
             RoundButton {
                 checkable: true
-                checked: device.input === KefDevice.Optical
-                enabled: device.connected
+                checked: KefDevice.input === KefDevice.Optical
+                enabled: KefDevice.connected
                 text: "OPT"
+                font.pointSize: 10
                 ButtonGroup.group: btnGroup
                 onClicked: {
                     if (checked)
-                        device.input = KefDevice.Optical
+                        KefDevice.input = KefDevice.Optical;
                 }
             }
 
             RoundButton {
                 checkable: true
-                checked: device.input === KefDevice.Usb
-                enabled: device.connected
+                checked: KefDevice.input === KefDevice.Usb
+                enabled: KefDevice.connected
                 text: "PC"
+                font.pointSize: 10
                 ButtonGroup.group: btnGroup
                 onClicked: {
                     if (checked)
-                        device.input = KefDevice.Usb
+                        KefDevice.input = KefDevice.Usb;
                 }
             }
         }
@@ -106,34 +108,32 @@ Item {
 
             Layout.alignment: Qt.AlignRight
 
-            icon.name: "settings"
+            icon.name: "cog-outline"
             flat: true
             onClicked: {
-                stack.push(Qt.resolvedUrl("settings.qml"))
+                stack.push(Qt.resolvedUrl("settings.qml"));
             }
         }
 
         Text {
             text: volumeSlider.value
             Layout.alignment: Qt.AlignHCenter
-            enabled: device.connected
+            enabled: KefDevice.connected
         }
 
         Slider {
-
             id: volumeSlider
 
             Layout.fillWidth: true
-            enabled: device.connected
+            enabled: KefDevice.connected
 
             from: 0
-            value: device.connected ? device.volume : 0
+            value: KefDevice.connected ? KefDevice.volume : 0
             to: 100
             stepSize: 1
 
             onMoved: {
-
-                device.volume = value
+                KefDevice.volume = value;
             }
 
             MouseArea {
@@ -142,16 +142,16 @@ Item {
 
                 propagateComposedEvents: true
 
-                onPressed: {
-                    mouse.accepted = false
+                onPressed: mouse => {
+                    mouse.accepted = false;
                 }
 
-                onWheel: {
-                    var steps = wheel.angleDelta.y / 15
+                onWheel: wheel => {
+                    var steps = wheel.angleDelta.y / 15;
                     if (steps > 0)
-                        device.volume += 1
+                        KefDevice.volume += 1;
                     else
-                        device.volume -= 1
+                        KefDevice.volume -= 1;
                 }
             }
         }
@@ -160,17 +160,17 @@ Item {
             flat: true
 
             Layout.alignment: Qt.AlignRight
-            enabled: device.connected
+            enabled: KefDevice.connected
 
             checkable: true
-            checked: device.muted
-            icon.name: device.muted ? "volume_off" : "volume_up"
+            checked: KefDevice.muted
+            icon.name: KefDevice.muted ? "volume-off" : "volume-high"
 
             onClicked: {
                 if (checked) {
-                    device.muted = true
+                    KefDevice.muted = true;
                 } else {
-                    device.muted = false
+                    KefDevice.muted = false;
                 }
             }
         }

@@ -1,11 +1,10 @@
-import QtQuick 2.10
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.3
-import Qt.labs.settings 1.0
-import com.kef 1.0
+import QtCore
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import com.kef
 
 ApplicationWindow {
-
     id: window
     width: 365
     height: 120
@@ -27,17 +26,13 @@ ApplicationWindow {
         property alias window_height: window.height
     }
 
-    KefDevice {
-        id: device
-    }
-
     StackView {
         id: stack
         initialItem: Qt.resolvedUrl("settings.qml")
         anchors.fill: parent
         anchors.margins: 10
         Component.onCompleted: {
-            stack.push(Qt.resolvedUrl("control.qml"))
+            stack.push(Qt.resolvedUrl("control.qml"));
         }
     }
 }
