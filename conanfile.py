@@ -30,7 +30,7 @@ class LS50RemoteConan(ConanFile):
     tool_requires = ["cmake/[>=3.22.6 <4]", "ninja/[>=1.11.1]"]
     # ---Sources---
     exports = ["info.json", "LICENSE"]
-    exports_sources = ["info.json", "*.txt", "src/*"]
+    exports_sources = ["info.json", "*.txt", "src/*", "resources/*"]
     # ---Binary model---
     settings = "os", "compiler", "build_type", "arch"
     options = {}
